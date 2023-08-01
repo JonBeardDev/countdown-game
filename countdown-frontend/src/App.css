@@ -1,0 +1,40 @@
+html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "MS Trebuchet", sans-serif;
+  font-size: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  background-image: linear-gradient(
+    to bottom right,
+    #231261,
+    #3d3bbb,
+    rgb(70, 96, 168),
+    #658cc7,
+    #ade1fa
+  );
+  overflow-y: auto;
+}
+
+.wrapper {
+  flex: 1;
+  min-height: 97vh;
+  display: flex;
+  flex-direction: column;
+  background-image: linear-gradient(
+    to bottom right,
+    #231261,
+    #3d3bbb,
+    rgb(70, 96, 168),
+    #658cc7,
+    #ade1fa
+  );
+  overflow-y: auto;
+}

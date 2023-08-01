@@ -1,0 +1,78 @@
+.letters-bg {
+  min-height: 100px;
+  background-color: rgb(44, 125, 218);
+  border: black;
+  display: flex;
+  gap: 5px;
+}
+
+.numbers-bg {
+  min-height: 130px;
+  background-color: rgb(44, 125, 218);
+  border: black;
+  display: flex;
+  gap: 5px;
+}
+
+.tile {
+  height: 70px;
+  width: 70px;
+  background-color: #004aad;
+  font-family: Futura, "Trebuchet MS", Arial, sans-serif;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 50px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.number-tile {
+  height: 100px;
+  width: 100px;
+  background-color: #004aad;
+  font-family: Futura, "Trebuchet MS", Arial, sans-serif;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 50px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.tile.hidden,
+.number-tile.hidden {
+  opacity: 0.3;
+}
+
+.tile.visible,
+.number-tile.hidden {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tile.correct {
+  background-color: #00b300; /* Green */
+}
+
+.tile.incorrect {
+  background-color: #ff4d4d; /* Red */
+}
+
+.equal-size-btn {
+  width: 250px;
+}
+
+.number-tile.correct {
+  background-color: #00b300; /* Green */
+}
+
+.operation-buttons-container button.correct {
+  background-color: #00b300; 
+  color: white; 
+}

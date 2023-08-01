@@ -1,0 +1,26 @@
+.header {
+    background-size: cover;
+    background-position: center center;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .header-tiles {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .header-tile {
+    width: 100px;
+    height: 100px;
+    background-color: #004AAD;
+    font-family: Futura, "Trebuchet MS", Arial, sans-serif;;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 80px;
+    font-weight: bold;
+  }

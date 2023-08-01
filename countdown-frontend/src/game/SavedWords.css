@@ -1,0 +1,4 @@
+/* Apply a background color to the table cells (td elements) in the .table-transparent table */
+.table.table-bordered.table-transparent td {
+  background-color: transparent !important;
+}
