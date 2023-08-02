@@ -33,6 +33,11 @@ function Numbers({ game, setGame, setTotal, setMax }) {
   const originalBigNumbers = bigNumbers.slice();
   const originalSmallNumbers = smallNumbers.slice();
 
+  useEffect(() => {
+    shuffle(originalBigNumbers);
+    shuffle(originalSmallNumbers);
+  }, [originalBigNumbers, originalSmallNumbers]);
+
   // Ensure initial state is reset at beginning/end of round
   const resetState = () => {
     setHiddenIndices([]);
@@ -55,15 +60,15 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setSolution(null);
   };
 
-  const shuffleDecks = () => {
+  const shuffleDecks = useCallback(() => {
     shuffle(originalBigNumbers);
     shuffle(originalSmallNumbers);
-  }
+  }, [originalBigNumbers, originalSmallNumbers]);
 
   const resetStateAndShuffleDecks = useCallback(() => {
     resetState();
     shuffleDecks();
-  }, []);
+  }, [shuffleDecks]);
 
   // Ensure state is reset if backing out to menu or starting new round
   useEffect(() => {
@@ -114,8 +119,13 @@ function Numbers({ game, setGame, setTotal, setMax }) {
       setChooseNumbers(false);
       setGetTarget(true);
     }
-  }, [amountBigNumbers, numbersChosen, bigDeck, smallDeck]);
-
+  }, [
+    amountBigNumbers,
+    numbersChosen,
+    shuffleDecks,
+    originalBigNumbers,
+    originalSmallNumbers,
+  ]);
 
   const targetHandler = (event) => {
     event.preventDefault();
@@ -318,9 +328,9 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setScore(
       bestAttempt === targetScore
         ? 10
-        : (Math.abs(bestAttempt - targetScore) < 6)
+        : Math.abs(bestAttempt - targetScore) < 6
         ? 7
-        : (Math.abs(bestAttempt - targetScore) < 11)
+        : Math.abs(bestAttempt - targetScore) < 11
         ? 5
         : 0
     );
@@ -363,9 +373,9 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setTotal((currentTotal) =>
       bestAttempt === targetScore
         ? currentTotal + 10
-        : (Math.abs(bestAttempt - targetScore) < 6)
+        : Math.abs(bestAttempt - targetScore) < 6
         ? currentTotal + 7
-        : (Math.abs(bestAttempt - targetScore) < 11)
+        : Math.abs(bestAttempt - targetScore) < 11
         ? currentTotal + 5
         : currentTotal
     );
