@@ -295,8 +295,7 @@ function Letters({
     let nextRound;
     if (game.type === "mini") {
       nextRound = "numbers";
-    }
-    if (game.type === "full") {
+    } else if (game.type === "full") {
       if (
         game.round === 2 ||
         game.round === 5 ||
@@ -304,11 +303,15 @@ function Letters({
         game.round === 13
       ) {
         nextRound = "numbers";
+      } else {
+        nextRound = "letters";
       }
     }
     if (game.type === "short") {
       if (game.round === 3 || game.round === 7) {
         nextRound = "numbers";
+      } else {
+        nextRound = "letters";
       }
     }
 
