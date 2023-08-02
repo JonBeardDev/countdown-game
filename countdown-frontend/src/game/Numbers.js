@@ -11,8 +11,6 @@ import { targetReachable } from "../utils/targetReachable";
 function Numbers({ game, setGame, setTotal, setMax }) {
   const history = useHistory();
   const [hiddenIndices, setHiddenIndices] = useState([]);
-  const [bigDeck, setBigDeck] = useState([]);
-  const [smallDeck, setSmallDeck] = useState([]);
   const [numbers, setNumbers] = useState(Array(6).fill(""));
   const [amountBigNumbers, setAmountBigNumbers] = useState(null);
   const [bestAttempt, setBestAttempt] = useState(0);
@@ -31,11 +29,9 @@ function Numbers({ game, setGame, setTotal, setMax }) {
   const [score, setScore] = useState(0);
   const [solution, setSolution] = useState(null);
 
-  // Shuffle number decks at beginning of new round
-  useEffect(() => {
-    setBigDeck(shuffle(bigNumbers));
-    setSmallDeck(shuffle(smallNumbers));
-  }, []);
+  // Make a copy of the original decks
+  const originalBigNumbers = bigNumbers.slice();
+  const originalSmallNumbers = smallNumbers.slice();
 
   // Ensure initial state is reset at beginning/end of round
   const resetState = () => {
@@ -59,16 +55,26 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setSolution(null);
   };
 
-  // Ensure state is reset if backing out to menu
+  const shuffleDecks = () => {
+    shuffle(originalBigNumbers);
+    shuffle(originalSmallNumbers);
+  }
+
+  const resetStateAndShuffleDecks = useCallback(() => {
+    resetState();
+    shuffleDecks();
+  }, []);
+
+  // Ensure state is reset if backing out to menu or starting new round
   useEffect(() => {
     const unlisten = history.listen((location, action) => {
       if (action === "POP" && location.pathname === "/menu") {
-        resetState();
+        resetStateAndShuffleDecks();
       }
     });
 
     return () => unlisten();
-  }, [history]);
+  }, [history, resetStateAndShuffleDecks]);
 
   // For displaying numbers round numbers (round x of y)
   const roundNum = game.numbers;
@@ -92,13 +98,15 @@ function Numbers({ game, setGame, setTotal, setMax }) {
 
   useEffect(() => {
     if (numbersChosen) {
+      shuffleDecks();
+
       const newNumbers = [];
       // Add x number of Big numbers to first x slots, fill rest with small numbers
       for (let i = 0; i < amountBigNumbers; i++) {
-        newNumbers.push(bigDeck.pop());
+        newNumbers.push(originalBigNumbers.pop());
       }
       for (let i = amountBigNumbers; i < 6; i++) {
-        newNumbers.push(smallDeck.pop());
+        newNumbers.push(originalSmallNumbers.pop());
       }
 
       setNumbers(newNumbers);
