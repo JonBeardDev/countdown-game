@@ -11,6 +11,8 @@ import { targetReachable } from "../utils/targetReachable";
 function Numbers({ game, setGame, setTotal, setMax }) {
   const history = useHistory();
   const [hiddenIndices, setHiddenIndices] = useState([]);
+  const [bigDeck, setBigDeck] = useState([]);
+  const [smallDeck, setSmallDeck] = useState([]);
   const [numbers, setNumbers] = useState(Array(6).fill(""));
   const [amountBigNumbers, setAmountBigNumbers] = useState(null);
   const [bestAttempt, setBestAttempt] = useState(0);
@@ -29,6 +31,12 @@ function Numbers({ game, setGame, setTotal, setMax }) {
   const [score, setScore] = useState(0);
   const [solution, setSolution] = useState(null);
 
+  // Shuffle number decks at beginning of new round
+  useEffect(() => {
+    setBigDeck(shuffle(bigNumbers));
+    setSmallDeck(shuffle(smallNumbers));
+  }, []);
+
   // Ensure initial state is reset at beginning/end of round
   const resetState = () => {
     setHiddenIndices([]);
@@ -36,7 +44,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setAmountBigNumbers(null);
     setBestAttempt(null);
     setisTargetReachable([]);
-    setTargetScore(null);
+    setTargetScore("000");
     setTimeRemaining(30);
     setTimerRunning(false);
     setChooseNumbers(true);
@@ -84,16 +92,13 @@ function Numbers({ game, setGame, setTotal, setMax }) {
 
   useEffect(() => {
     if (numbersChosen) {
-      const shuffledBigNumbers = shuffle(bigNumbers);
-      const shuffledSmallNumbers = shuffle(smallNumbers);
-
       const newNumbers = [];
       // Add x number of Big numbers to first x slots, fill rest with small numbers
       for (let i = 0; i < amountBigNumbers; i++) {
-        newNumbers.push(shuffledBigNumbers.pop());
+        newNumbers.push(bigDeck.pop());
       }
       for (let i = amountBigNumbers; i < 6; i++) {
-        newNumbers.push(shuffledSmallNumbers.pop());
+        newNumbers.push(smallDeck.pop());
       }
 
       setNumbers(newNumbers);
@@ -101,7 +106,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
       setChooseNumbers(false);
       setGetTarget(true);
     }
-  }, [amountBigNumbers, numbersChosen]);
+  }, [amountBigNumbers, numbersChosen, bigDeck, smallDeck]);
 
 
   const targetHandler = (event) => {
@@ -305,9 +310,9 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setScore(
       bestAttempt === targetScore
         ? 10
-        : Math.abs(bestAttempt - targetScore < 6)
+        : (Math.abs(bestAttempt - targetScore) < 6)
         ? 7
-        : Math.abs(bestAttempt - targetScore < 11)
+        : (Math.abs(bestAttempt - targetScore) < 11)
         ? 5
         : 0
     );
@@ -350,9 +355,9 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setTotal((currentTotal) =>
       bestAttempt === targetScore
         ? currentTotal + 10
-        : Math.abs(bestAttempt - targetScore < 6)
+        : (Math.abs(bestAttempt - targetScore) < 6)
         ? currentTotal + 7
-        : Math.abs(bestAttempt - targetScore < 11)
+        : (Math.abs(bestAttempt - targetScore) < 11)
         ? currentTotal + 5
         : currentTotal
     );
