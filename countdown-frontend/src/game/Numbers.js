@@ -29,6 +29,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
   const [score, setScore] = useState(0);
   const [solution, setSolution] = useState(null);
 
+  // Ensure initial state is reset at beginning/end of round
   const resetState = () => {
     setHiddenIndices([]);
     setNumbers(Array(6).fill(""));
@@ -50,6 +51,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setSolution(null);
   };
 
+  // Ensure state is reset if backing out to menu
   useEffect(() => {
     const unlisten = history.listen((location, action) => {
       if (action === "POP" && location.pathname === "/menu") {
@@ -60,6 +62,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     return () => unlisten();
   }, [history]);
 
+  // For displaying numbers round numbers (round x of y)
   const roundNum = game.numbers;
   let totalRounds;
   switch (game.type) {
@@ -73,6 +76,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
       totalRounds = 1;
   }
 
+  // Works in tandem with below useEffect to draw number tiles from decks
   const chooseTiles = (numBigNumbers) => {
     setAmountBigNumbers(numBigNumbers);
     setNumbersChosen(true);
@@ -84,7 +88,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
       const shuffledSmallNumbers = shuffle(smallNumbers);
 
       const newNumbers = [];
-
+      // Add x number of Big numbers to first x slots, fill rest with small numbers
       for (let i = 0; i < amountBigNumbers; i++) {
         newNumbers.push(shuffledBigNumbers.pop());
       }
@@ -99,6 +103,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     }
   }, [amountBigNumbers, numbersChosen]);
 
+
   const targetHandler = (event) => {
     event.preventDefault();
     // Set target to random 3 digit number
@@ -107,6 +112,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setTimerRunning(true);
   };
 
+  // Determine if target is reachable and return steps if possible
   useEffect(() => {
     if (targetScore !== "000") {
       const reachableSteps = targetReachable(initialNumbers, targetScore);
@@ -114,6 +120,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     }
   }, [initialNumbers, targetScore]);
 
+  // If steps are available, create display of steps in standard mathematical form
   useEffect(() => {
     if (isTargetReachable && isTargetReachable.length > 0) {
       const newSolution = isTargetReachable.map((step) => {
@@ -141,26 +148,32 @@ function Numbers({ game, setGame, setTotal, setMax }) {
           </div>
         );
       });
+      // Remove final line, as it only shows 'target' = 'target'
       newSolution.pop();
       setSolution(newSolution);
     }
   }, [isTargetReachable]);
 
+  // Handle clicking operation button
   const operationHandler = (op) => {
-    console.log(isTargetReachable);
+    // Toggle operation selected
     setOperation((prevOp) => (prevOp === op ? null : op));
 
+    // If two number tiles are selected, calculate result
     if (selectedTileIndices.length === 2) {
       const [leftIndex, rightIndex] = selectedTileIndices;
       const x = numbers[leftIndex];
       const y = numbers[rightIndex];
       const result = calculation(op, x, y);
 
+      // If calculation is possible (positive integer)...
       if (result !== null && Number.isInteger(result)) {
+        // Move current number tiles to undo state for undo button
         setUndoState((prev) => [...prev, { numbers, hiddenIndices }]);
 
         const updatedNumbers = [...numbers];
 
+        // Replace leftmost number with result, hide rightmost tile
         if (leftIndex > rightIndex) {
           updatedNumbers[rightIndex] = result;
           updatedNumbers[leftIndex] = "";
@@ -177,10 +190,12 @@ function Numbers({ game, setGame, setTotal, setMax }) {
           ]);
         }
 
+        // Deselect tiles/operation and update numbers
         setSelectedTileIndices([]);
         setNumbers(updatedNumbers);
         setOperation(null);
 
+        // Update best attempt, if closer to target than current best
         if (
           !bestAttempt ||
           Math.abs(result - targetScore) < Math.abs(bestAttempt - targetScore)
@@ -188,6 +203,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
           setBestAttempt(result);
         }
       } else {
+        // Deselect if calculation is not positive integer
         setSelectedTileIndices([]);
         setOperation(null);
       }
@@ -203,11 +219,13 @@ function Numbers({ game, setGame, setTotal, setMax }) {
       return;
     }
 
+    // Toggle selected tiles
     setSelectedTileIndices((prevSelectedIndices) => {
       const updatedIndices = prevSelectedIndices.includes(index)
         ? prevSelectedIndices.filter((i) => i !== index)
         : [...prevSelectedIndices, index];
 
+      // Calculate, if 2 tiles and operation are selected (as above)
       if (updatedIndices.length === 2 && operation) {
         const [leftIndex, rightIndex] = updatedIndices;
         const x = numbers[leftIndex];
@@ -254,6 +272,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     });
   };
 
+  // Clear all calculations and selections (clear button)
   const clearHandler = () => {
     setNumbers(initialNumbers);
     setHiddenIndices([]);
@@ -262,6 +281,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setUndoState([]);
   };
 
+  // Undo last calculation
   const undoHandler = () => {
     if (undoState.length > 0) {
       const prevUndoState = undoState[undoState.length - 1];
@@ -274,6 +294,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     }
   };
 
+  // End of round - set score for round and reset states
   const endRoundHandler = useCallback(() => {
     setTimerRunning(false);
     setRoundEnd(true);
@@ -292,6 +313,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     );
   }, [bestAttempt, initialNumbers, targetScore]);
 
+  // 30 second timer
   useEffect(() => {
     let timer = null;
 
@@ -312,15 +334,18 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     endRoundHandler,
   ]);
 
+  // Return to menu button
   const menuButton = (event) => {
     event.preventDefault();
     resetState();
     history.push("/menu");
   };
 
+  // Move to next round button
   const nextRoundButton = (event) => {
     event.preventDefault();
 
+    // Update overall scores
     setMax((currentMax) => currentMax + 10);
     setTotal((currentTotal) =>
       bestAttempt === targetScore
@@ -332,6 +357,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
         : currentTotal
     );
 
+    // Determine next round (typically letters, unless final number round)
     let nextRound;
     if (
       game.type === "mini" ||
@@ -352,6 +378,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     });
   };
 
+  // Map numbers drawn to a tile. Should be clickable only when the timer is running
   const tiles = numbers.map((number, index) => (
     <NumberTile
       key={index}

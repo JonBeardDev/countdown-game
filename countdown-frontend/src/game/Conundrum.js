@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { shuffle } from "../utils/shuffle";
 import conundrums from "../decks/conundrums";
 import Tile from "./Tile";
@@ -35,6 +35,24 @@ function Conundrum({ game, setGame, setTotal, setMax }) {
     setConundrum(shuffle(newAnswer.split("")));
   };
 
+  const submitHandler = useCallback(() => {
+    setSubmitted(true);
+
+    // If user runs out of time or gives up, guess is marked as blank and incorrect
+    if (guess.join("").trim().length < 9) {
+      setIsCorrect(false);
+      setGuess(Array(9).fill(""));
+    } else {
+      // Check guess in string form versus answer pulled from conundrums file
+      const correctGuess =
+        guess.join("").toLowerCase() === answer.toLowerCase();
+      setIsCorrect(correctGuess);
+    }
+    // Clear hidden indices so that original conundrum, guess, and answer are not hidden
+    setHiddenIndices([]);
+    setFirstClick(false);
+  }, [guess, answer]);
+
   // Start 30 second timer on game start. "Submit" at end of 30 seconds.
   useEffect(() => {
     let timer = null;
@@ -51,7 +69,7 @@ function Conundrum({ game, setGame, setTotal, setMax }) {
     }
 
     return () => clearTimeout(timer);
-  }, [timerRunning, timeRemaining, submitted]);
+  }, [timerRunning, timeRemaining, submitted, submitHandler]);
 
   const clickHandler = (event, letter, index) => {
     event.preventDefault();
@@ -106,25 +124,6 @@ function Conundrum({ game, setGame, setTotal, setMax }) {
         "As you have 'buzzed in', the first letter of your guess may not be deleted."
       );
     }
-  };
-
-  const submitHandler = (event) => {
-    setSubmitted(true);
-
-    // If user runs out of time or gives up, guess is marked as blank and incorrect
-    if (guess.join("").trim().length < 9) {
-      setIsCorrect(false);
-      setGuess(Array(9).fill(""));
-    } else {
-      event.preventDefault();
-      // Check guess in string form versus answer pulled from conundrums file
-      const correctGuess =
-        guess.join("").toLowerCase() === answer.toLowerCase();
-      setIsCorrect(correctGuess);
-    }
-    // Clear hidden indices so that original conundrum, guess, and answer are not hidden
-    setHiddenIndices([]);
-    setFirstClick(false);
   };
 
   // Map each letter in the conundrum to a tile. Should be clickable when visible until submitted is true
@@ -191,7 +190,10 @@ function Conundrum({ game, setGame, setTotal, setMax }) {
           <div className="d-flex pt-3 mx-5 justify-content-center gap-3">
             {firstClick && (
               <>
-                <button className="btn btn-danger equal-size-btn" onClick={deleteHandler}>
+                <button
+                  className="btn btn-danger equal-size-btn"
+                  onClick={deleteHandler}
+                >
                   Delete Last Letter
                 </button>
                 <button
@@ -201,7 +203,10 @@ function Conundrum({ game, setGame, setTotal, setMax }) {
                 >
                   Submit Answer
                 </button>
-                <button className="btn btn-secondary equal-size-btn" onClick={submitHandler}>
+                <button
+                  className="btn btn-secondary equal-size-btn"
+                  onClick={submitHandler}
+                >
                   Give Up
                 </button>
               </>
