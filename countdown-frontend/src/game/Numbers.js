@@ -29,14 +29,22 @@ function Numbers({ game, setGame, setTotal, setMax }) {
   const [score, setScore] = useState(0);
   const [solution, setSolution] = useState(null);
 
-  // Make a copy of the original decks
-  const originalBigNumbers = bigNumbers.slice();
-  const originalSmallNumbers = smallNumbers.slice();
+  const deepCloneArray = useCallback(
+    (arr) =>
+      arr.map((item) => (Array.isArray(item) ? deepCloneArray(item) : item)),
+    []
+  );
 
-  useEffect(() => {
-    shuffle(originalBigNumbers);
-    shuffle(originalSmallNumbers);
-  }, [originalBigNumbers, originalSmallNumbers]);
+  const getInitialBigDeck = useCallback(
+    () => deepCloneArray(bigNumbers),
+    [deepCloneArray]
+  );
+  const getInitialSmallDeck = useCallback(
+    () => deepCloneArray(smallNumbers),
+    [deepCloneArray]
+  );
+  const [bigDeck, setBigDeck] = useState(getInitialBigDeck);
+  const [smallDeck, setSmallDeck] = useState(getInitialSmallDeck);
 
   // Ensure initial state is reset at beginning/end of round
   const resetState = () => {
@@ -45,7 +53,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setAmountBigNumbers(null);
     setBestAttempt(null);
     setisTargetReachable([]);
-    setTargetScore("000");
+    setTargetScore(null);
     setTimeRemaining(30);
     setTimerRunning(false);
     setChooseNumbers(true);
@@ -60,26 +68,24 @@ function Numbers({ game, setGame, setTotal, setMax }) {
     setSolution(null);
   };
 
-  const shuffleDecks = useCallback(() => {
-    shuffle(originalBigNumbers);
-    shuffle(originalSmallNumbers);
-  }, [originalBigNumbers, originalSmallNumbers]);
-
-  const resetStateAndShuffleDecks = useCallback(() => {
-    resetState();
-    shuffleDecks();
-  }, [shuffleDecks]);
-
-  // Ensure state is reset if backing out to menu or starting new round
+  // Ensure state is reset if backing out to menu
   useEffect(() => {
     const unlisten = history.listen((location, action) => {
       if (action === "POP" && location.pathname === "/menu") {
-        resetStateAndShuffleDecks();
+        resetState();
+        setBigDeck(getInitialBigDeck);
+        setSmallDeck(getInitialSmallDeck);
       }
     });
 
     return () => unlisten();
-  }, [history, resetStateAndShuffleDecks]);
+  }, [
+    history,
+    setBigDeck,
+    setSmallDeck,
+    getInitialBigDeck,
+    getInitialSmallDeck,
+  ]);
 
   // For displaying numbers round numbers (round x of y)
   const roundNum = game.numbers;
@@ -103,15 +109,16 @@ function Numbers({ game, setGame, setTotal, setMax }) {
 
   useEffect(() => {
     if (numbersChosen) {
-      shuffleDecks();
+      const shuffledBigDeck = shuffle(bigDeck);
+      const shuffledSmallDeck = shuffle(smallDeck);
 
       const newNumbers = [];
       // Add x number of Big numbers to first x slots, fill rest with small numbers
       for (let i = 0; i < amountBigNumbers; i++) {
-        newNumbers.push(originalBigNumbers.pop());
+        newNumbers.push(shuffledBigDeck.pop());
       }
       for (let i = amountBigNumbers; i < 6; i++) {
-        newNumbers.push(originalSmallNumbers.pop());
+        newNumbers.push(shuffledSmallDeck.pop());
       }
 
       setNumbers(newNumbers);
@@ -119,13 +126,7 @@ function Numbers({ game, setGame, setTotal, setMax }) {
       setChooseNumbers(false);
       setGetTarget(true);
     }
-  }, [
-    amountBigNumbers,
-    numbersChosen,
-    shuffleDecks,
-    originalBigNumbers,
-    originalSmallNumbers,
-  ]);
+  }, [amountBigNumbers, numbersChosen, bigDeck, smallDeck]);
 
   const targetHandler = (event) => {
     event.preventDefault();
@@ -361,14 +362,17 @@ function Numbers({ game, setGame, setTotal, setMax }) {
   const menuButton = (event) => {
     event.preventDefault();
     resetState();
+    setBigDeck(getInitialBigDeck);
+    setSmallDeck(getInitialSmallDeck);
     history.push("/menu");
   };
 
   // Move to next round button
   const nextRoundButton = (event) => {
     event.preventDefault();
-
     // Update overall scores
+    setBigDeck(getInitialBigDeck);
+    setSmallDeck(getInitialSmallDeck);
     setMax((currentMax) => currentMax + 10);
     setTotal((currentTotal) =>
       bestAttempt === targetScore
