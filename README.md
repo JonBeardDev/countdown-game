@@ -2,6 +2,8 @@
 
 Based on the popular British Game shows *Countdown* and *8 Out of 10 Cats Does Countdown*, this single page React app allows you to play a single-player version of the Letters, Numbers, and Countdown Conundrum rounds in varying length games.
 
+[Link](https://countdown-cd36.onrender.com/) to deployed game.
+
 ![Image showing the Menu screen with game types radio buttons on the left and game description on the right with Start button](/images/Menu.png)
 
 ## Letters Round
